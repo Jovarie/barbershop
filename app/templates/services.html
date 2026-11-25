@@ -9,7 +9,7 @@
     <td>{{ service.name }}</td>
     <td>{{ service.duration_min }} min</td>
     <td>£{{ "%.2f"|format(service.price_pence / 100) }}</td>
-    <td><a href="#">Book</a></td>
+    <td><a href="{{ url_for('booking.book', service_id=service.id) }}">Book</a></td>
   </tr>
   {% else %}
   <tr><td colspan="4">No services yet.</td></tr>
