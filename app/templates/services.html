@@ -1,18 +1,27 @@
 {% extends "base.html" %}
-{% block title %}Services{% endblock %}
+{% block title %}Services and prices{% endblock %}
 {% block content %}
-<h1>Our services</h1>
-<table>
-  <tr><th>Service</th><th>Time</th><th>Price</th><th></th></tr>
-  {% for service in services %}
-  <tr>
-    <td>{{ service.name }}</td>
-    <td>{{ service.duration_min }} min</td>
-    <td>£{{ "%.2f"|format(service.price_pence / 100) }}</td>
-    <td><a href="{{ url_for('booking.book', service_id=service.id) }}">Book</a></td>
-  </tr>
-  {% else %}
-  <tr><td colspan="4">No services yet.</td></tr>
-  {% endfor %}
-</table>
+<section class="page-head">
+  <div class="container">
+    <h1>Services and prices</h1>
+    <p>Choose a service to see free times.</p>
+  </div>
+</section>
+
+<section class="container py-5">
+  <div class="row g-4">
+    {% for service in services %}
+    <div class="col-sm-6 col-lg-4">
+      <div class="service-card">
+        <h2>{{ service.name }}</h2>
+        <div class="meta mb-2">{{ service.duration_min }} minutes</div>
+        <div class="price mb-3">£{{ "%.2f"|format(service.price_pence / 100) }}</div>
+        <a class="btn btn-gold" href="{{ url_for('booking.book', service_id=service.id) }}">Book {{ service.name|lower }}</a>
+      </div>
+    </div>
+    {% else %}
+    <p>No services yet.</p>
+    {% endfor %}
+  </div>
+</section>
 {% endblock %}

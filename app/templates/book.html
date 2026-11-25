@@ -1,26 +1,54 @@
 {% extends "base.html" %}
 {% block title %}Book {{ service.name }}{% endblock %}
 {% block content %}
-<h1>Book: {{ service.name }}</h1>
-<p>{{ service.duration_min }} min, £{{ "%.2f"|format(service.price_pence / 100) }}</p>
+<section class="page-head">
+  <div class="container">
+    <h1>Book: {{ service.name }}</h1>
+    <p>{{ service.duration_min }} minutes, £{{ "%.2f"|format(service.price_pence / 100) }}</p>
+  </div>
+</section>
 
-<form method="get">
-  <label>Day <input type="date" name="date" value="{{ day.isoformat() }}"></label>
-  <button type="submit">Show times</button>
-</form>
+<section class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="panel">
+        <form method="get" class="row g-2 align-items-end mb-4">
+          <div class="col-sm-8">
+            <label class="form-label fw-bold" for="date">Choose a day</label>
+            <input class="form-control form-control-lg" type="date" id="date" name="date" value="{{ day.isoformat() }}">
+          </div>
+          <div class="col-sm-4 d-grid">
+            <button class="btn btn-gold btn-lg" type="submit">Show times</button>
+          </div>
+        </form>
 
-{% if slots %}
-<form method="post">
-  <h2>Free times on {{ day.strftime("%A %d %B") }}</h2>
-  {% for slot in slots %}
-    <label><input type="radio" name="starts_at" value="{{ slot.isoformat() }}" required>
-      {{ slot.strftime("%H:%M") }}</label>
-  {% endfor %}
-  <p><label>Your name <input name="name" required></label></p>
-  <p><label>Your email <input type="email" name="email" required></label></p>
-  <button type="submit">Book</button>
-</form>
-{% else %}
-<p>No free times on this day. The shop is open Tuesday to Saturday, 9am to 5pm.</p>
-{% endif %}
+        {% if slots %}
+        <form method="post">
+          <h2 class="h3">Free times on {{ day.strftime("%A %d %B") }}</h2>
+          <div class="slot-grid my-3">
+            {% for slot in slots %}
+            <input type="radio" class="btn-check" name="starts_at" id="slot{{ loop.index }}"
+                   value="{{ slot.isoformat() }}" required>
+            <label class="btn" for="slot{{ loop.index }}">{{ slot.strftime("%H:%M") }}</label>
+            {% endfor %}
+          </div>
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-bold" for="name">Your name</label>
+              <input class="form-control" id="name" name="name" required>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-bold" for="email">Your email</label>
+              <input class="form-control" type="email" id="email" name="email" required>
+            </div>
+          </div>
+          <button class="btn btn-gold btn-lg mt-4" type="submit">Confirm booking</button>
+        </form>
+        {% else %}
+        <div class="alert alert-light border mb-0">No free times on this day. We're open Tuesday to Saturday, 9am to 5pm.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}

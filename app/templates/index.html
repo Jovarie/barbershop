@@ -1,2 +1,42 @@
 {% extends "base.html" %}
-{% block content %}<h1>Barbershop booking</h1>{% endblock %}
+{% block title %}Afro hair specialists{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <div class="eyebrow mb-3">Afro and Caribbean barbershop</div>
+    <h1>Fresh cuts for <span class="accent">every crown</span></h1>
+    <p class="lead mt-3 mb-4">Fades, shape-ups, twists and beard work from barbers who know textured hair.
+      Afro hair is our speciality, and every hair type is welcome.</p>
+    <div class="d-flex flex-wrap gap-3">
+      <a class="btn btn-gold btn-lg" href="{{ url_for('booking.services') }}">Book an appointment</a>
+      <a class="btn btn-outline-cream btn-lg" href="{{ url_for('booking.services') }}">See prices</a>
+    </div>
+  </div>
+</section>
+
+<section class="container py-5">
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="feature">
+        <div class="icon">✂️</div>
+        <h3>Textured hair experts</h3>
+        <p class="mb-0">Skin fades, tapers, line-ups and sponge twists, done by barbers who cut Afro hair every day.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="feature">
+        <div class="icon">📅</div>
+        <h3>Book in a minute</h3>
+        <p class="mb-0">Pick your service, choose a free time and you're in. No phone calls, no waiting around.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="feature">
+        <div class="icon">🤝</div>
+        <h3>All hair welcome</h3>
+        <p class="mb-0">Coils, curls, waves or straight. Whatever your hair, you'll leave looking sharp.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
