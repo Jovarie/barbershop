@@ -1,8 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Booking confirmed{% endblock %}
 {% block content %}
-<h1>Booking confirmed</h1>
-<p>{{ appointment.customer.name }}, you're booked for a <strong>{{ appointment.service.name }}</strong>
-on {{ appointment.starts_at.strftime("%A %d %B at %H:%M") }}.</p>
-<p><a href="{{ url_for('booking.services') }}">Book something else</a></p>
+<section class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="panel text-center">
+        <div class="tick">✓</div>
+        <h1>You're booked in</h1>
+        <p class="lead">{{ appointment.customer.name }}, see you for your
+          <strong>{{ appointment.service.name }}</strong> on
+          <strong>{{ appointment.starts_at.strftime("%A %d %B at %H:%M") }}</strong>.</p>
+        <a class="btn btn-gold mt-2" href="{{ url_for('booking.services') }}">Book something else</a>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}
