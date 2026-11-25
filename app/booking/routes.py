@@ -4,10 +4,12 @@ from datetime import date, datetime, timedelta
 from flask import Blueprint, abort, flash, g, redirect, render_template, request, url_for
 from sqlalchemy.exc import IntegrityError
 
+from app.activity import log_event
 from app.auth.security import login_required
 from app.booking.slots import free_start_times
 from app.extensions import db
 from app.models import Appointment, Barber, Service, WorkingHours
+from app.reviews.routes import reviewed_ids
 
 booking_bp = Blueprint("booking", __name__)
 
@@ -66,6 +68,8 @@ def book(service_id):
             flash("Sorry, that time has just been taken. Please pick another.")
             return redirect(url_for("booking.book", service_id=service.id,
                                     date=starts_at.date().isoformat()))
+        log_event("booking_created", g.user, appointment_id=appointment.id,
+                  service=service.name, starts_at=starts_at.isoformat())
         return redirect(url_for("booking.confirmation", appointment_id=appointment.id))
 
     try:
@@ -95,4 +99,5 @@ def my_bookings():
     now = datetime.now()
     upcoming = sorted((a for a in mine if a.starts_at >= now), key=lambda a: a.starts_at)
     past = [a for a in mine if a.starts_at < now]
-    return render_template("my_bookings.html", upcoming=upcoming, past=past)
+    return render_template("my_bookings.html", upcoming=upcoming, past=past,
+                           reviewed=reviewed_ids(g.user))

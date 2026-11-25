@@ -1,6 +1,7 @@
 """Application factory: builds and configures the Flask app."""
 import os
 
+import click
 from dotenv import load_dotenv
 from flask import Flask
 
@@ -36,15 +37,36 @@ def create_app(test_config=None):
     from app.booking.routes import booking_bp
     from app.auth.routes import auth_bp
     from app.admin.routes import admin_bp
+    from app.reviews.routes import reviews_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(booking_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(reviews_bp)
 
     @app.cli.command("init-db")
     def init_db():
         """Create all tables in the database."""
         db.create_all()
         print("Database tables created")
+
+    @app.cli.command("demo-past-booking")
+    @click.argument("email")
+    def demo_past_booking(email):
+        """Add a finished appointment for EMAIL so reviews can be tried (and demoed)."""
+        from datetime import datetime, timedelta
+        from app.models import Appointment, Barber, Service, User
+        user = User.query.filter_by(email=email.lower()).first()
+        if user is None:
+            print("No user with that email. Log in with Google once first.")
+            return
+        service = Service.query.filter_by(active=True).first()
+        start = (datetime.now() - timedelta(days=7)).replace(hour=10, minute=0,
+                                                              second=0, microsecond=0)
+        db.session.add(Appointment(customer_id=user.id, barber_id=Barber.query.first().id,
+                                   service_id=service.id, starts_at=start,
+                                   ends_at=start + timedelta(minutes=service.duration_min)))
+        db.session.commit()
+        print(f"Added a past {service.name} on {start:%d %b} for {user.name}")
 
     return app

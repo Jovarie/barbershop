@@ -39,4 +39,27 @@
     </div>
   </div>
 </section>
+
+{% if reviews %}
+<section class="container pb-5">
+  <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
+    <h2 class="display-font m-0">What customers say</h2>
+    {% if summary %}
+    <div class="rating-summary"><span class="stars">★</span> {{ summary.average }} out of 5
+      from {{ summary.count }} review{{ "s" if summary.count != 1 }}</div>
+    {% endif %}
+  </div>
+  <div class="row g-4">
+    {% for r in reviews %}
+    <div class="col-md-4">
+      <div class="feature review">
+        <div class="stars" aria-label="{{ r.rating }} out of 5 stars">{{ "★" * r.rating }}{{ "☆" * (5 - r.rating) }}</div>
+        {% if r.comment %}<p class="mt-2">“{{ r.comment }}”</p>{% endif %}
+        <div class="small text-muted mt-auto">{{ r.first_name }}, {{ r.service }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 {% endblock %}

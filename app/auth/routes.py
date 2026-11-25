@@ -3,6 +3,7 @@ import os
 
 from flask import Blueprint, current_app, jsonify, redirect, render_template, request, url_for
 
+from app.activity import log_event
 from app.auth import firebase
 from app.auth.security import SESSION_COOKIE, user_from_claims
 
@@ -42,6 +43,7 @@ def session_login():
         return jsonify({"error": "Invalid or expired sign-in, please try again"}), 401
 
     user = user_from_claims(claims)
+    log_event("login", user)
     response = jsonify({"message": "Logged in", "name": user.name})
     response.set_cookie(SESSION_COOKIE, cookie,
                         max_age=int(firebase.SESSION_DURATION.total_seconds()),

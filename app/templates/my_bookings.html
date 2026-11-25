@@ -7,7 +7,13 @@
     <div class="text-muted">{{ a.starts_at.strftime("%A %d %B %Y at %H:%M") }}</div>
   </div>
   {% if past and a.status == "booked" %}
-  <span class="badge rounded-pill text-bg-secondary">Done</span>
+  <div class="d-flex align-items-center gap-2">
+    {% if a.id in reviewed %}
+    <span class="badge rounded-pill text-bg-secondary">Reviewed</span>
+    {% else %}
+    <a class="btn btn-sm btn-gold" href="{{ url_for('reviews.new_review', appointment_id=a.id) }}">Leave a review</a>
+    {% endif %}
+  </div>
   {% else %}
   <span class="badge rounded-pill {{ 'text-bg-success' if a.status == 'booked' else 'text-bg-secondary' }}">{{ a.status|capitalize }}</span>
   {% endif %}

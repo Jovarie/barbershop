@@ -1,10 +1,11 @@
-"""Shared test setup: a seeded in-memory database and a fake Firebase.
+"""Shared test setup: seeded in-memory databases and a fake Firebase.
 
 Tests never talk to the real Firebase. FakeFirebase stands in for the two
 functions in app/auth/firebase.py, so a 'token' is just the user's details.
 """
 from datetime import date, time, timedelta
 
+import mongomock
 import pytest
 
 from app import create_app
@@ -45,7 +46,8 @@ def app(monkeypatch):
     monkeypatch.setattr(firebase, "verify_session_cookie", FakeFirebase.verify_session_cookie)
     monkeypatch.setenv("ADMIN_EMAILS", "barber@shop.test")
     app = create_app({"SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:", "TESTING": True,
-                      "COOKIE_SECURE": False})
+                      "COOKIE_SECURE": False,
+                      "MONGO_CLIENT": mongomock.MongoClient()})  # in-memory fake MongoDB
     with app.app_context():
         db.create_all()
         admin = User(email="barber@shop.test", name="Barber", role="admin")
