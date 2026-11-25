@@ -13,6 +13,7 @@ def create_app(test_config=None):
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-change-me")
     if test_config:
         app.config.update(test_config)
 
@@ -20,7 +21,9 @@ def create_app(test_config=None):
     from app import models  # noqa: F401  registers the tables
 
     from app.main.routes import main_bp
+    from app.booking.routes import booking_bp
     app.register_blueprint(main_bp)
+    app.register_blueprint(booking_bp)
 
     @app.cli.command("init-db")
     def init_db():
