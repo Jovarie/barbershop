@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-5">
+      <div class="panel text-center">
+        <h1>Log in</h1>
+        <p class="text-muted">Use your Google account to book and manage your appointments.</p>
+        <button id="googleBtn" class="btn btn-gold btn-lg w-100 mt-2" type="button">Continue with Google</button>
+        <p id="loginStatus" class="text-danger small mt-3 mb-0" role="alert"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="module">
+  // Firebase Google Sign-In (lab 6). The browser gets a short-lived ID token from
+  // Google, the server checks it and replaces it with an HttpOnly session cookie.
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, setPersistence,
+           inMemoryPersistence } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+  const firebaseConfig = {{ firebase_config | tojson }};
+  const nextUrl = {{ next_url | tojson }};
+  const auth = getAuth(initializeApp(firebaseConfig));
+  const button = document.getElementById("googleBtn");
+  const status = document.getElementById("loginStatus");
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+  // The server's cookie keeps the user logged in, not Firebase in the browser.
+  // Set this up front: the popup must open straight from the click, or
+  // browsers (Safari especially) block it.
+  const ready = setPersistence(auth, inMemoryPersistence);
+
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    status.textContent = "";
+    try {
+      const result = await signInWithPopup(auth, new GoogleAuthProvider());
+      await ready;
+      try {
+        const idToken = await result.user.getIdToken();
+        const response = await fetch("{{ url_for('auth.session_login') }}", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+          body: JSON.stringify({ idToken })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Login failed");
+      } finally {
+        await signOut(auth);  // clear Firebase's copy once the server has the session
+      }
+      window.location.assign(nextUrl);
+    } catch (error) {
+      status.textContent = error.message;
+      button.disabled = false;
+    }
+  });
+</script>
+{% endblock %}

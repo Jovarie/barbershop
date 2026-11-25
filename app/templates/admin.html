@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <h1>Upcoming appointments</h1>
+    <p>Every booking from today onwards, soonest first.</p>
+  </div>
+</section>
+
+<section class="container py-5">
+  <div class="panel">
+    {% if appointments %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr><th>When</th><th>Customer</th><th>Service</th><th>Length</th></tr>
+        </thead>
+        <tbody>
+          {% for a in appointments %}
+          <tr>
+            <td class="fw-bold">{{ a.starts_at.strftime("%a %d %b, %H:%M") }}</td>
+            <td>{{ a.customer.name }}<div class="small text-muted">{{ a.customer.email }}</div></td>
+            <td>{{ a.service.name }}</td>
+            <td>{{ a.service.duration_min }} min</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">No upcoming appointments.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
