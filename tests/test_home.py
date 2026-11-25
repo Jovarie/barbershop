@@ -1,8 +1,5 @@
-"""Tests for the public pages."""
-from app import create_app
+"""The home page loads (uses the shared fixtures, so no real database is touched)."""
 
 
-def test_home_page_loads():
-    """The home page returns HTTP 200."""
-    client = create_app({"SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:"}).test_client()
+def test_home_page_loads(client):
     assert client.get("/").status_code == 200

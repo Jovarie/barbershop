@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Leave a review{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="panel">
+        <h1>How was your {{ appointment.service.name|lower }}?</h1>
+        <p class="text-muted">{{ appointment.starts_at.strftime("%A %d %B %Y at %H:%M") }}</p>
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <fieldset class="mb-3">
+            <legend class="form-label fw-bold fs-6">Your rating</legend>
+            <div class="star-picker">
+              {% for n in range(5, 0, -1) %}
+              <input type="radio" class="btn-check" name="rating" id="star{{ n }}" value="{{ n }}" required>
+              <label for="star{{ n }}" title="{{ n }} star{{ 's' if n > 1 }}">★</label>
+              {% endfor %}
+            </div>
+          </fieldset>
+          <label class="form-label fw-bold" for="comment">Comments (optional)</label>
+          <textarea class="form-control" id="comment" name="comment" rows="4" maxlength="500">{{ comment }}</textarea>
+          <p class="small text-muted mt-2">Only your first name is shown with your review.</p>
+          <button class="btn btn-gold btn-lg mt-2" type="submit">Post review</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

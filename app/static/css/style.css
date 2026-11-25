@@ -118,3 +118,14 @@ h1, h2, h3, .brand, .display-font {
 /* Footer */
 .site-footer { background: var(--ink); color: #cfc8bd; padding: 2.5rem 0; margin-top: 4rem; }
 .site-footer .brand { font-size: 1.6rem; }
+
+/* Reviews */
+.stars { color: var(--gold); font-size: 1.25rem; letter-spacing: 0.1em; }
+.rating-summary { font-weight: 700; }
+.review { display: flex; flex-direction: column; }
+/* Star picker: radios in reverse order so hovering lights up the stars to the left */
+.star-picker { display: inline-flex; flex-direction: row-reverse; gap: 0.25rem; }
+.star-picker label { font-size: 2.4rem; color: var(--sand); cursor: pointer; line-height: 1; }
+.star-picker label:hover, .star-picker label:hover ~ label,
+.star-picker .btn-check:checked ~ label { color: var(--gold); }
+.star-picker .btn-check:focus-visible + label { outline: 2px solid var(--green); border-radius: 4px; }
