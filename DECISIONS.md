@@ -18,3 +18,10 @@
 | 25 Nov 2026 | Admin = email listed in ADMIN_EMAILS | Admin sign-up page, hard-coded email | No sign-up page to abuse; the barber's email lives in config, not code |
 | 25 Nov 2026 | Return 404 for someone else's booking | 403 Forbidden | Doesn't reveal which booking numbers exist |
 | 25 Nov 2026 | Fake Firebase in tests | Call real Firebase in tests | Tests run offline and fast with no key file, but still go through the real login route and decorators |
+| 25 Nov 2026 | Reviews and activity log in MongoDB, bookings stay in SQL | Everything in Postgres | Bookings need ACID transactions and constraints; reviews and logs are flexible, write-heavy documents with no joins, which suits a document store |
+| 25 Nov 2026 | Unique index on reviews.appointment_id | Check in Python only | The database enforces one review per appointment even if two requests arrive together |
+| 25 Nov 2026 | Average rating via a MongoDB aggregation pipeline | Load every review and average in Python | The database does the work and only one small result travels over the network |
+| 25 Nov 2026 | TTL index deletes activity logs after 90 days | Keep logs forever, or a manual cleanup job | Data minimisation under UK GDPR, with no extra code to run |
+| 25 Nov 2026 | Only the first name is stored and shown on reviews | Show the full name | Privacy: reviews are public on the home page |
+| 25 Nov 2026 | App keeps working if MongoDB is down | Let errors crash the page | Bookings (SQL) are the core job; reviews and logs are extras, so they fail quietly and are logged |
+| 25 Nov 2026 | mongomock for tests | Test against the real Atlas cluster | Fast, offline, and tests can't pollute real data |
