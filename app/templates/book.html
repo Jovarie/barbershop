@@ -24,6 +24,7 @@
 
         {% if slots %}
         <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <h2 class="h3">Free times on {{ day.strftime("%A %d %B") }}</h2>
           <div class="slot-grid my-3">
             {% for slot in slots %}
@@ -32,17 +33,12 @@
             <label class="btn" for="slot{{ loop.index }}">{{ slot.strftime("%H:%M") }}</label>
             {% endfor %}
           </div>
-          <div class="row g-3">
-            <div class="col-sm-6">
-              <label class="form-label fw-bold" for="name">Your name</label>
-              <input class="form-control" id="name" name="name" required>
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label fw-bold" for="email">Your email</label>
-              <input class="form-control" type="email" id="email" name="email" required>
-            </div>
-          </div>
-          <button class="btn btn-gold btn-lg mt-4" type="submit">Confirm booking</button>
+          {% if g.user %}
+          <p class="text-muted mb-0">Booking as <strong>{{ g.user.name }}</strong> ({{ g.user.email }})</p>
+          <button class="btn btn-gold btn-lg mt-3" type="submit">Confirm booking</button>
+          {% else %}
+          <a class="btn btn-gold btn-lg mt-2" href="{{ url_for('auth.login', next=request.full_path) }}">Log in to book</a>
+          {% endif %}
         </form>
         {% else %}
         <div class="alert alert-light border mb-0">No free times on this day. We're open Tuesday to Saturday, 9am to 5pm.</div>

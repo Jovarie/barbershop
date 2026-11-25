@@ -1,12 +1,13 @@
 """Booking pages: list services, pick a slot, confirm a booking."""
 from datetime import date, datetime, timedelta
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, g, redirect, render_template, request, url_for
 from sqlalchemy.exc import IntegrityError
 
+from app.auth.security import login_required
 from app.booking.slots import free_start_times
 from app.extensions import db
-from app.models import Appointment, Barber, Service, User, WorkingHours
+from app.models import Appointment, Barber, Service, WorkingHours
 
 booking_bp = Blueprint("booking", __name__)
 
@@ -42,30 +43,19 @@ def book(service_id):
         abort(503)
 
     if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        email = request.form.get("email", "").strip().lower()
+        if g.user is None:  # anyone can browse times, but booking needs a login
+            return redirect(url_for("auth.login", next=request.path))
         try:
             starts_at = datetime.fromisoformat(request.form["starts_at"])
         except (KeyError, ValueError):
             abort(400)
-        if not name or "@" not in email:
-            flash("Please enter your name and a valid email.")
-            return redirect(url_for("booking.book", service_id=service.id,
-                                    date=starts_at.date().isoformat()))
         # Re-check the slot is still free: someone may have booked it meanwhile.
         if starts_at not in _free_slots(barber, service, starts_at.date()):
             flash("Sorry, that time has just been taken. Please pick another.")
             return redirect(url_for("booking.book", service_id=service.id,
                                     date=starts_at.date().isoformat()))
 
-        # No login yet: find or create the customer by email (replaced by login later).
-        customer = User.query.filter_by(email=email).first()
-        if customer is None:
-            customer = User(email=email, name=name, role="customer")
-            db.session.add(customer)
-            db.session.flush()
-
-        appointment = Appointment(customer_id=customer.id, barber_id=barber.id,
+        appointment = Appointment(customer_id=g.user.id, barber_id=barber.id,
                                   service_id=service.id, starts_at=starts_at,
                                   ends_at=starts_at + timedelta(minutes=service.duration_min))
         db.session.add(appointment)
@@ -87,7 +77,22 @@ def book(service_id):
 
 
 @booking_bp.route("/bookings/<int:appointment_id>")
+@login_required
 def confirmation(appointment_id):
-    """Show a booking's details after it is made."""
+    """Show a booking's details. Only its customer or an admin may see it."""
     appointment = db.get_or_404(Appointment, appointment_id)
+    if appointment.customer_id != g.user.id and g.user.role != "admin":
+        abort(404)  # 404, not 403, so nobody can tell which booking ids exist
     return render_template("confirmation.html", appointment=appointment)
+
+
+@booking_bp.route("/my-bookings")
+@login_required
+def my_bookings():
+    """The logged-in customer's own bookings, split into upcoming and past."""
+    mine = (Appointment.query.filter_by(customer_id=g.user.id)
+            .order_by(Appointment.starts_at.desc()).all())
+    now = datetime.now()
+    upcoming = sorted((a for a in mine if a.starts_at >= now), key=lambda a: a.starts_at)
+    past = [a for a in mine if a.starts_at < now]
+    return render_template("my_bookings.html", upcoming=upcoming, past=past)

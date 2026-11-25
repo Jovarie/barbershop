@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}My bookings{% endblock %}
+{% macro booking_row(a, past=False) %}
+<li class="list-group-item d-flex justify-content-between align-items-center py-3">
+  <div>
+    <div class="fw-bold">{{ a.service.name }}</div>
+    <div class="text-muted">{{ a.starts_at.strftime("%A %d %B %Y at %H:%M") }}</div>
+  </div>
+  {% if past and a.status == "booked" %}
+  <span class="badge rounded-pill text-bg-secondary">Done</span>
+  {% else %}
+  <span class="badge rounded-pill {{ 'text-bg-success' if a.status == 'booked' else 'text-bg-secondary' }}">{{ a.status|capitalize }}</span>
+  {% endif %}
+</li>
+{% endmacro %}
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <h1>My bookings</h1>
+    <p>Hi {{ g.user.name }}, here are your appointments.</p>
+  </div>
+</section>
+
+<section class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="panel">
+        <h2 class="h3">Upcoming</h2>
+        {% if upcoming %}
+        <ul class="list-group list-group-flush mb-4">
+          {% for a in upcoming %}{{ booking_row(a) }}{% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Nothing booked yet.</p>
+        <a class="btn btn-gold mb-4" href="{{ url_for('booking.services') }}">Book an appointment</a>
+        {% endif %}
+
+        {% if past %}
+        <h2 class="h3">Past</h2>
+        <ul class="list-group list-group-flush">
+          {% for a in past %}{{ booking_row(a, past=True) }}{% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
