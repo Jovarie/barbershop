@@ -14,6 +14,12 @@
     <a class="btn btn-sm btn-gold" href="{{ url_for('reviews.new_review', appointment_id=a.id) }}">Leave a review</a>
     {% endif %}
   </div>
+  {% elif can_cancel(a, g.user) %}
+  <form method="post" action="{{ url_for('booking.cancel', appointment_id=a.id) }}"
+        onsubmit='return confirm({{ ("Cancel your " ~ a.service.name|lower ~ " on " ~ a.starts_at.strftime("%A %d %B at %H:%M") ~ "?")|tojson }})'>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">Cancel</button>
+  </form>
   {% else %}
   <span class="badge rounded-pill {{ 'text-bg-success' if a.status == 'booked' else 'text-bg-secondary' }}">{{ a.status|capitalize }}</span>
   {% endif %}

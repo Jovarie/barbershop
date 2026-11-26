@@ -19,10 +19,19 @@ class AuthError(Exception):
 
 
 def _init():
-    """Start the Admin SDK once, using the service account key kept out of git."""
+    """Start the Admin SDK once.
+
+    On my Mac it uses the service account key file (kept out of git). On Google
+    App Engine there is no key file: the app runs as the project's own service
+    account, so Application Default Credentials are used and no key is uploaded.
+    """
     if not firebase_admin._apps:
         key_path = os.environ.get("FIREBASE_CREDENTIALS", "serviceAccountKey.json")
-        firebase_admin.initialize_app(credentials.Certificate(key_path))
+        if os.path.exists(key_path):
+            cred = credentials.Certificate(key_path)
+        else:
+            cred = credentials.ApplicationDefault()
+        firebase_admin.initialize_app(cred, {"projectId": os.environ.get("FIREBASE_PROJECT_ID")})
 
 
 def create_session_cookie(id_token):

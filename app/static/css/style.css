@@ -129,3 +129,8 @@ h1, h2, h3, .brand, .display-font {
 .star-picker label:hover, .star-picker label:hover ~ label,
 .star-picker .btn-check:checked ~ label { color: var(--gold); }
 .star-picker .btn-check:focus-visible + label { outline: 2px solid var(--green); border-radius: 4px; }
+
+/* Admin */
+.admin-tabs .btn { border-radius: 999px; padding: 0.6rem 1.4rem; font-weight: 700; }
+.form-check-input:checked { background-color: var(--green); border-color: var(--green); }
+.form-check-input:focus { border-color: var(--gold); box-shadow: 0 0 0 0.2rem rgba(224, 165, 38, 0.25); }

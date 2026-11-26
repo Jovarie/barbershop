@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Services and prices{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <h1>Services and prices</h1>
+    <p>Hidden services stay on old bookings but can't be booked.</p>
+  </div>
+</section>
+
+<nav class="container pt-4 d-flex flex-wrap gap-2 admin-tabs">
+  <a class="btn btn-outline-dark rounded-pill" href="{{ url_for('admin.dashboard') }}">Bookings</a>
+  <a class="btn btn-gold" href="{{ url_for('admin.services') }}">Services and prices</a>
+  <a class="btn btn-outline-dark rounded-pill" href="{{ url_for('admin.hours') }}">Opening hours</a>
+</nav>
+
+<section class="container py-4">
+  <div class="panel">
+    <div class="d-flex justify-content-end mb-3">
+      <a class="btn btn-gold" href="{{ url_for('admin.edit_service') }}">Add a service</a>
+    </div>
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Service</th><th>Length</th><th>Price</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {% for s in services %}
+          <tr>
+            <td class="fw-bold">{{ s.name }}</td>
+            <td>{{ s.duration_min }} min</td>
+            <td>£{{ "%.2f"|format(s.price_pence / 100) }}</td>
+            <td>
+              {% if s.active %}<span class="badge rounded-pill text-bg-success">Bookable</span>
+              {% else %}<span class="badge rounded-pill text-bg-secondary">Hidden</span>{% endif %}
+            </td>
+            <td class="text-end"><a class="btn btn-sm btn-outline-dark rounded-pill"
+                href="{{ url_for('admin.edit_service', service_id=s.id) }}">Edit</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

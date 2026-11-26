@@ -9,6 +9,7 @@ from app.auth.security import login_required
 from app.booking.slots import free_start_times
 from app.extensions import db
 from app.models import Appointment, Barber, Service, WorkingHours
+from app.notify import send_booking_email
 from app.reviews.routes import reviewed_ids
 
 booking_bp = Blueprint("booking", __name__)
@@ -57,6 +58,7 @@ def make_booking(user, barber, service, starts_at):
         raise SlotTaken
     log_event("booking_created", user, appointment_id=appointment.id,
               service=service.name, starts_at=starts_at.isoformat())
+    send_booking_email("booked", appointment)  # via the cloud function
     return appointment
 
 
@@ -134,6 +136,7 @@ def cancel_booking(appointment, user):
     db.session.commit()
     log_event("booking_cancelled", user, appointment_id=appointment.id,
               by_admin=user.id != appointment.customer_id)
+    send_booking_email("cancelled", appointment)  # via the cloud function
     return True
 
 
