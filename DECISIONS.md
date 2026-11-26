@@ -25,3 +25,11 @@
 | 25 Nov 2026 | Only the first name is stored and shown on reviews | Show the full name | Privacy: reviews are public on the home page |
 | 25 Nov 2026 | App keeps working if MongoDB is down | Let errors crash the page | Bookings (SQL) are the core job; reviews and logs are extras, so they fail quietly and are logged |
 | 25 Nov 2026 | mongomock for tests | Test against the real Atlas cluster | Fast, offline, and tests can't pollute real data |
+| 25 Nov 2026 | REST API under /api/v1 with JSON and proper status codes | GraphQL, or JSON mixed into page routes | REST matches the resources (services, slots, bookings); versioned path lets v2 change without breaking clients |
+| 25 Nov 2026 | API reuses the website's session cookie + CSRF header | Separate API keys or JWTs | One login system to secure; the API is used by the site's own pages and the demo; tokens would be the next step for a mobile app |
+| 25 Nov 2026 | make_booking() and cancel_booking() shared by web and API | Duplicate logic in each route | Business rules live in one place, so they can't drift apart |
+| 25 Nov 2026 | 404 (not 403) for other users' bookings | 403 Forbidden | Doesn't reveal which booking ids exist |
+| 25 Nov 2026 | REST API under /api/v1 with JSON and proper status codes | GraphQL, or JSON mixed into page routes | REST matches the resources (services, slots, bookings); versioned path lets v2 change without breaking clients |
+| 25 Nov 2026 | API reuses the website's session cookie + CSRF header | Separate API keys or JWTs | One login system to secure; the API is used by the site's own pages and the demo; tokens would be the next step for a mobile app |
+| 25 Nov 2026 | make_booking() and cancel_booking() shared by web and API | Duplicate logic in each route | Business rules live in one place, so they can't drift apart |
+| 25 Nov 2026 | 404 (not 403) for other users' bookings | 403 Forbidden | Doesn't reveal which booking ids exist |

@@ -3,7 +3,7 @@ import os
 
 import click
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, jsonify, request
 
 from app.extensions import db
 
@@ -38,17 +38,42 @@ def create_app(test_config=None):
     from app.auth.routes import auth_bp
     from app.admin.routes import admin_bp
     from app.reviews.routes import reviews_bp
+    from app.api.routes import api_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(booking_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(reviews_bp)
+    app.register_blueprint(api_bp)
+
+    @app.errorhandler(404)
+    @app.errorhandler(405)
+    def not_found(exc):
+        """API callers get JSON errors even for URLs that don't exist; website users get HTML."""
+        if request.path.startswith("/api/"):
+            return jsonify({"error": exc.description}), exc.code
+        return exc
 
     @app.cli.command("init-db")
     def init_db():
         """Create all tables in the database."""
         db.create_all()
         print("Database tables created")
+
+    @app.cli.command("upgrade-db")
+    def upgrade_db():
+        """One-off Postgres change: cancelled bookings no longer block their slot.
+
+        Swaps the plain unique rule on (barber_id, starts_at) for a partial unique
+        index that only covers bookings whose status is 'booked'.
+        """
+        from sqlalchemy import text
+        with db.engine.begin() as conn:  # one transaction: all or nothing
+            conn.execute(text("ALTER TABLE appointments DROP CONSTRAINT IF EXISTS no_double_booking"))
+            conn.execute(text("DROP INDEX IF EXISTS no_double_booking"))
+            conn.execute(text("CREATE UNIQUE INDEX no_double_booking ON appointments "
+                              "(barber_id, starts_at) WHERE status = 'booked'"))
+        print("Database upgraded: cancelled bookings now free their slot")
 
     @app.cli.command("demo-past-booking")
     @click.argument("email")
