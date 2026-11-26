@@ -11,6 +11,7 @@ from app.extensions import db
 from app.models import User
 
 SESSION_COOKIE = "firebase_session"
+UNSAFE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 
 
 def admin_emails():
@@ -65,8 +66,8 @@ def csrf_token():
 
 
 def check_csrf():
-    """Runs before every request: reject POSTs that don't carry the right token."""
-    if request.method != "POST" or current_app.config.get("CSRF_DISABLED"):
+    """Runs before every request: reject changes (POST, PUT, PATCH, DELETE) without the token."""
+    if request.method not in UNSAFE_METHODS or current_app.config.get("CSRF_DISABLED"):
         return
     sent = request.headers.get("X-CSRF-Token") or request.form.get("csrf_token", "")
     saved = session.get("csrf_token", "")

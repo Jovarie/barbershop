@@ -12,6 +12,11 @@ from app.models import Appointment, Barber, Service, WorkingHours
 from app.reviews.routes import reviewed_ids
 
 booking_bp = Blueprint("booking", __name__)
+CANCEL_NOTICE = timedelta(hours=2)  # customers must cancel at least 2 hours before
+
+
+class SlotTaken(Exception):
+    """The chosen time is no longer free."""
 
 
 @booking_bp.route("/services")
@@ -36,10 +41,31 @@ def _free_slots(barber, service, day):
                             service.duration_min, busy)
 
 
+def make_booking(user, barber, service, starts_at):
+    """Save a booking, or raise SlotTaken. Shared by the web page and the REST API."""
+    # Re-check the slot is still free: someone may have booked it meanwhile.
+    if starts_at not in _free_slots(barber, service, starts_at.date()):
+        raise SlotTaken
+    appointment = Appointment(customer_id=user.id, barber_id=barber.id,
+                              service_id=service.id, starts_at=starts_at,
+                              ends_at=starts_at + timedelta(minutes=service.duration_min))
+    db.session.add(appointment)
+    try:
+        db.session.commit()
+    except IntegrityError:  # the database's no_double_booking index fired
+        db.session.rollback()
+        raise SlotTaken
+    log_event("booking_created", user, appointment_id=appointment.id,
+              service=service.name, starts_at=starts_at.isoformat())
+    return appointment
+
+
 @booking_bp.route("/book/<int:service_id>", methods=["GET", "POST"])
 def book(service_id):
     """GET: show free slots for a day. POST: save the chosen slot as a booking."""
     service = db.get_or_404(Service, service_id)
+    if not service.active:
+        abort(404)
     barber = Barber.query.first()
     if barber is None:
         abort(503)
@@ -51,25 +77,12 @@ def book(service_id):
             starts_at = datetime.fromisoformat(request.form["starts_at"])
         except (KeyError, ValueError):
             abort(400)
-        # Re-check the slot is still free: someone may have booked it meanwhile.
-        if starts_at not in _free_slots(barber, service, starts_at.date()):
-            flash("Sorry, that time has just been taken. Please pick another.")
-            return redirect(url_for("booking.book", service_id=service.id,
-                                    date=starts_at.date().isoformat()))
-
-        appointment = Appointment(customer_id=g.user.id, barber_id=barber.id,
-                                  service_id=service.id, starts_at=starts_at,
-                                  ends_at=starts_at + timedelta(minutes=service.duration_min))
-        db.session.add(appointment)
         try:
-            db.session.commit()
-        except IntegrityError:  # the database's no_double_booking constraint fired
-            db.session.rollback()
+            appointment = make_booking(g.user, barber, service, starts_at)
+        except SlotTaken:
             flash("Sorry, that time has just been taken. Please pick another.")
             return redirect(url_for("booking.book", service_id=service.id,
                                     date=starts_at.date().isoformat()))
-        log_event("booking_created", g.user, appointment_id=appointment.id,
-                  service=service.name, starts_at=starts_at.isoformat())
         return redirect(url_for("booking.confirmation", appointment_id=appointment.id))
 
     try:
@@ -100,4 +113,41 @@ def my_bookings():
     upcoming = sorted((a for a in mine if a.starts_at >= now), key=lambda a: a.starts_at)
     past = [a for a in mine if a.starts_at < now]
     return render_template("my_bookings.html", upcoming=upcoming, past=past,
-                           reviewed=reviewed_ids(g.user))
+                           reviewed=reviewed_ids(g.user), can_cancel=can_cancel)
+
+
+def can_cancel(appointment, user):
+    """Admins can cancel any upcoming booking; customers their own, up to 2 hours before."""
+    if appointment.status != "booked" or appointment.starts_at <= datetime.now():
+        return False
+    if user.role == "admin":
+        return True
+    return (appointment.customer_id == user.id
+            and appointment.starts_at - datetime.now() >= CANCEL_NOTICE)
+
+
+def cancel_booking(appointment, user):
+    """Cancel if the rules allow it. Returns True if cancelled. Shared with the REST API."""
+    if not can_cancel(appointment, user):
+        return False
+    appointment.status = "cancelled"
+    db.session.commit()
+    log_event("booking_cancelled", user, appointment_id=appointment.id,
+              by_admin=user.id != appointment.customer_id)
+    return True
+
+
+@booking_bp.post("/bookings/<int:appointment_id>/cancel")
+@login_required
+def cancel(appointment_id):
+    """Mark a booking as cancelled. The row is kept, and the slot becomes free again."""
+    appointment = db.get_or_404(Appointment, appointment_id)
+    if appointment.customer_id != g.user.id and g.user.role != "admin":
+        abort(404)
+    if cancel_booking(appointment, g.user):
+        flash("Booking cancelled.")
+    else:
+        flash("This booking can't be cancelled online any more. Please call the shop.")
+    if g.user.role == "admin" and request.form.get("from") == "admin":
+        return redirect(url_for("admin.dashboard"))
+    return redirect(url_for("booking.my_bookings"))
