@@ -47,7 +47,8 @@ def app(monkeypatch):
     monkeypatch.setenv("ADMIN_EMAILS", "barber@shop.test")
     app = create_app({"SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:", "TESTING": True,
                       "COOKIE_SECURE": False,
-                      "MONGO_CLIENT": mongomock.MongoClient()})  # in-memory fake MongoDB
+                      "MONGO_CLIENT": mongomock.MongoClient(),  # in-memory fake MongoDB
+                      "EMAIL_FUNCTION_URL": None})  # never send real emails from tests
     with app.app_context():
         db.create_all()
         admin = User(email="barber@shop.test", name="Barber", role="admin")

@@ -1,0 +1,16 @@
+# Files NOT uploaded to App Engine.
+.gcloudignore
+.git/
+.gitignore
+.github/
+.venv/
+__pycache__/
+.pytest_cache/
+.vscode/
+.env
+serviceAccountKey.json
+tests/
+docs/
+*.md
+make_secrets.py
+functions/

@@ -21,6 +21,7 @@ def create_app(test_config=None):
     app.config["SESSION_COOKIE_SECURE"] = secure
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["EMAIL_FUNCTION_URL"] = os.environ.get("EMAIL_FUNCTION_URL")  # cloud function
     if test_config:
         app.config.update(test_config)
 

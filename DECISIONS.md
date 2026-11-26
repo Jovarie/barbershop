@@ -33,3 +33,4 @@
 | 25 Nov 2026 | API reuses the website's session cookie + CSRF header | Separate API keys or JWTs | One login system to secure; the API is used by the site's own pages and the demo; tokens would be the next step for a mobile app |
 | 25 Nov 2026 | make_booking() and cancel_booking() shared by web and API | Duplicate logic in each route | Business rules live in one place, so they can't drift apart |
 | 25 Nov 2026 | 404 (not 403) for other users' bookings | 403 Forbidden | Doesn't reveal which booking ids exist |
+| 26 Nov 2026 | GitHub Actions runs tests + coverage on every push and PR | Run tests by hand only; Jenkins | Free for this repo and lives next to the code; catches breakages before they reach main; no secrets needed because tests use SQLite, mongomock and a fake Firebase |

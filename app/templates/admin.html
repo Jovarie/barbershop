@@ -8,13 +8,19 @@
   </div>
 </section>
 
-<section class="container py-5">
+<nav class="container pt-4 d-flex flex-wrap gap-2 admin-tabs">
+  <a class="btn btn-gold" href="{{ url_for('admin.dashboard') }}">Bookings</a>
+  <a class="btn btn-outline-dark rounded-pill" href="{{ url_for('admin.services') }}">Services and prices</a>
+  <a class="btn btn-outline-dark rounded-pill" href="{{ url_for('admin.hours') }}">Opening hours</a>
+</nav>
+
+<section class="container py-4">
   <div class="panel">
     {% if appointments %}
     <div class="table-responsive">
       <table class="table align-middle mb-0">
         <thead>
-          <tr><th>When</th><th>Customer</th><th>Service</th><th>Length</th></tr>
+          <tr><th>When</th><th>Customer</th><th>Service</th><th>Length</th><th></th></tr>
         </thead>
         <tbody>
           {% for a in appointments %}
@@ -23,6 +29,14 @@
             <td>{{ a.customer.name }}<div class="small text-muted">{{ a.customer.email }}</div></td>
             <td>{{ a.service.name }}</td>
             <td>{{ a.service.duration_min }} min</td>
+            <td class="text-end">
+              <form method="post" action="{{ url_for('booking.cancel', appointment_id=a.id) }}"
+                    onsubmit='return confirm({{ ("Cancel this booking for " ~ a.customer.name ~ "?")|tojson }})'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="from" value="admin">
+                <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">Cancel</button>
+              </form>
+            </td>
           </tr>
           {% endfor %}
         </tbody>

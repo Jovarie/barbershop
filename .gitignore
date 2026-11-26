@@ -222,3 +222,5 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 serviceAccountKey.json
+functions/*.env.yaml
+secrets.yaml

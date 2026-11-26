@@ -1,0 +1,23 @@
+# Google App Engine (standard environment) settings - see lab 7.
+runtime: python312
+entrypoint: gunicorn -b :$PORT run:app   # production web server instead of "flask run"
+instance_class: F1                      # the smallest instance, covered by the free tier
+
+automatic_scaling:
+  max_instances: 1                      # caps cost: never more than one server running
+  min_instances: 0                      # scales to zero when nobody is using the site
+
+env_variables:
+  TZ: Europe/London                     # booking times follow UK time, including summer time
+
+# Passwords and keys live in secrets.yaml, which is git-ignored and only uploaded to Google.
+includes:
+  - secrets.yaml
+
+handlers:
+  - url: /static
+    static_dir: app/static
+    secure: always
+  - url: /.*
+    script: auto
+    secure: always                      # redirect any http:// request to https://

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Opening hours{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <h1>Opening hours</h1>
+    <p>Customers can only book times inside these hours.</p>
+  </div>
+</section>
+
+<nav class="container pt-4 d-flex flex-wrap gap-2 admin-tabs">
+  <a class="btn btn-outline-dark rounded-pill" href="{{ url_for('admin.dashboard') }}">Bookings</a>
+  <a class="btn btn-outline-dark rounded-pill" href="{{ url_for('admin.services') }}">Services and prices</a>
+  <a class="btn btn-gold" href="{{ url_for('admin.hours') }}">Opening hours</a>
+</nav>
+
+<section class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <form method="post" class="panel">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% for d in days %}
+        <div class="row g-2 align-items-center py-2 {{ 'border-top' if not loop.first }}">
+          <div class="col-5 col-sm-4">
+            <div class="form-check form-switch m-0">
+              <input class="form-check-input" type="checkbox" role="switch"
+                     id="open_{{ d.weekday }}" name="open_{{ d.weekday }}" {{ "checked" if d.row }}>
+              <label class="form-check-label fw-bold" for="open_{{ d.weekday }}">{{ d.name }}</label>
+            </div>
+          </div>
+          <div class="col">
+            <input class="form-control" type="time" name="start_{{ d.weekday }}" aria-label="{{ d.name }} opening time"
+                   value="{{ d.row.start_time.strftime('%H:%M') if d.row else '09:00' }}">
+          </div>
+          <div class="col-auto text-muted">to</div>
+          <div class="col">
+            <input class="form-control" type="time" name="end_{{ d.weekday }}" aria-label="{{ d.name }} closing time"
+                   value="{{ d.row.end_time.strftime('%H:%M') if d.row else '17:00' }}">
+          </div>
+        </div>
+        {% endfor %}
+        <button class="btn btn-gold mt-4" type="submit">Save opening hours</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
